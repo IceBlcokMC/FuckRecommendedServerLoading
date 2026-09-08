@@ -1,6 +1,8 @@
 #include "mod/MyMod.h"
 
+#include "ll/api/Config.h"
 #include "ll/api/mod/RegisterHelper.h"
+#include "mod/ServerTabHooks.h"
 
 namespace my_mod {
 
@@ -11,19 +13,41 @@ MyMod& MyMod::getInstance() {
 
 bool MyMod::load() {
     getSelf().getLogger().debug("Loading...");
-    // Code for loading the mod goes here.
+
+    auto& config  = getConfig();
+    auto  path    = getSelf().getConfigDir() / "config.json";
+    bool  changed = false;
+    try {
+        changed = !ll::config::loadConfig(config, path);
+    } catch (...) {
+        getSelf().getLogger().error("Failed to load config, using default values");
+        config = Config{};
+        changed = true;
+    }
+    if (changed) {
+        ll::config::saveConfig(config, path);
+    }
     return true;
 }
 
 bool MyMod::enable() {
     getSelf().getLogger().debug("Enabling...");
-    // Code for enabling the mod goes here.
+
+    auto const& config = getConfig();
+    if (config.disableFeaturedServers) {
+        getSelf().getLogger().info("推荐服务器目录请求已禁用 (disableFeaturedServers)");
+    }
+    if (config.instantUnlockServersTab) {
+        getSelf().getLogger().info("服务器选项卡等待已跳过 (instantUnlockServersTab)");
+    }
+    installServerTabHooks(config);
     return true;
 }
 
 bool MyMod::disable() {
     getSelf().getLogger().debug("Disabling...");
-    // Code for disabling the mod goes here.
+
+    uninstallServerTabHooks();
     return true;
 }
 

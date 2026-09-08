@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ll/api/mod/NativeMod.h"
+#include "mod/Config.h"
 
 namespace my_mod {
 
@@ -12,6 +13,8 @@ public:
     MyMod() : mSelf(*ll::mod::NativeMod::current()) {}
 
     [[nodiscard]] ll::mod::NativeMod& getSelf() const { return mSelf; }
+
+    [[nodiscard]] Config& getConfig() { return mConfig; }
 
     /// @return True if the mod is loaded successfully.
     bool load();
@@ -28,6 +31,7 @@ public:
 
 private:
     ll::mod::NativeMod& mSelf;
+    Config              mConfig;
 };
 
 } // namespace my_mod
